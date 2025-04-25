@@ -2,10 +2,12 @@
 defineProps<{
   category: string;
   towers: Tower[];
-  states: { [name: string]: "force" | "ban" | "default" };
+  states: Record<string, "force" | "ban" | "default">;
 }>();
 
-defineEmits(["toggleState"]);
+defineEmits<{
+  (e: "toggleState", name: string): void;
+}>();
 </script>
 
 <template>
