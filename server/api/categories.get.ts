@@ -1,7 +1,14 @@
-export default defineEventHandler(async (event) => {
-  const source = await fetchSourcePage();
+export default defineCachedEventHandler(
+  async () => {
+    const source = await fetchSourcePage();
 
-  const categories = extractTowersByCategory(source);
+    const categories = extractTowersByCategory(source);
 
-  return categories;
-});
+    return categories;
+  },
+  {
+    name: "categories",
+    maxAge: 60 * 60 * 24,
+    swr: true,
+  }
+);
