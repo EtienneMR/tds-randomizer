@@ -1,4 +1,5 @@
 const STATE_TOGGLE = ["default", "ban", "force"] as const;
+const STORAGE_PREFIX = "tds_";
 
 export default async function useEquipables() {
   const equipables = useState<Equipable[]>("equipables");
@@ -10,14 +11,14 @@ export default async function useEquipables() {
     equipable.state = state;
 
     if (state === "default") {
-      localStorage.removeItem(equipable.name);
+      localStorage.removeItem(STORAGE_PREFIX + equipable.name);
     } else {
-      localStorage.setItem(equipable.name, state);
+      localStorage.setItem(STORAGE_PREFIX + equipable.name, state);
     }
   }
 
-  function nextState(state: (typeof STATE_TOGGLE)[number]) {
-    const currentIndex = STATE_TOGGLE.indexOf(state);
+  function nextState(state: string) {
+    const currentIndex = (STATE_TOGGLE as readonly string[]).indexOf(state);
     return STATE_TOGGLE[(currentIndex + 1) % STATE_TOGGLE.length]!;
   }
 
@@ -41,7 +42,7 @@ export default async function useEquipables() {
     for (const equipable of equipables.value) {
       equipable.state =
         (localStorage.getItem(
-          equipable.name
+          STORAGE_PREFIX + equipable.name
         ) as (typeof STATE_TOGGLE)[number]) ?? "default";
     }
   });

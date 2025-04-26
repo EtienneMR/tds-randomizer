@@ -43,49 +43,54 @@ const { equipables, toggleState, toggleGroup } = await useEquipables();
 const activeTab = ref<(typeof TYPES)[number]["value"]>("tower");
 const selectedTowers = ref<Equipable[]>([]);
 const selectedMap = ref<Equipable | null>(null);
+const generating = ref(false);
 
 const equipablesTypes = computed(() => groupArray(equipables.value, "type"));
 const tabGroups = computed(() =>
   groupArray(equipablesTypes.value[activeTab.value], "group")
 );
 
-function generate(): void {
-  const towersByState = groupArray(equipablesTypes.value.tower, "state");
-
-  const finalMaps = towersByState.force ?? [];
-  const towersAvaiable = towersByState.default ?? [];
-  const towsrsMissing = 5 - finalMaps.length;
-
-  for (let i = 0; i < towsrsMissing; i++) {
-    if (towersAvaiable.length) {
-      const index = Math.floor(Math.random() * towersAvaiable.length);
-      finalMaps.push(...towersAvaiable.splice(index, 1));
+function reset() {
+  for (const equipable of equipables.value) {
+    if (equipable.state == "removed") {
+      equipable.state = "default";
     }
   }
-  selectedTowers.value = finalMaps;
+  selectedTowers.value = [];
+  selectedMap.value = null;
+}
 
-  const mapsByState = groupArray(equipablesTypes.value.map, "state");
-
-  if (mapsByState.force?.length) {
-    selectedMap.value = mapsByState.force[0]!;
-  } else if (mapsByState.default?.length) {
-    selectedMap.value =
-      mapsByState.default[
-        Math.floor(Math.random() * mapsByState.default.length)
-      ]!;
-  } else {
-    selectedMap.value = null;
+function wrapToggle<P extends unknown[]>(f: (...args: P) => void, ...args: P) {
+  if (!generating.value) {
+    reset();
+    f(...args);
   }
 }
 
-watch(
-  equipables,
-  () => {
-    selectedTowers.value = [];
-    selectedMap.value = null;
-  },
-  { deep: true }
-);
+async function generate() {
+  generating.value = true;
+  reset();
+
+  const towersByState = groupArray(equipablesTypes.value.tower, "state");
+  const mapsByState = groupArray(equipablesTypes.value.map, "state");
+
+  const originalTab = activeTab.value;
+
+  activeTab.value = "tower";
+  selectedTowers.value = await pickEquipables(
+    towersByState.force,
+    towersByState.default,
+    5
+  );
+
+  activeTab.value = "map";
+  selectedMap.value = (
+    await pickEquipables(mapsByState.force, mapsByState.default, 1)
+  )[0]!;
+
+  activeTab.value = originalTab;
+  generating.value = false;
+}
 </script>
 
 <template>
@@ -106,41 +111,18 @@ watch(
             :key="groupName"
             :group-name="groupName"
             :equipables="equipables"
-            @toggleState="toggleState"
-            @toggleGroup="toggleGroup"
+            @toggleState="(e) => wrapToggle(toggleState, e)"
+            @toggleGroup="(n) => wrapToggle(toggleGroup, n)"
           />
         </div>
       </Transition>
 
-      <TransitionGroup
-        name="list"
-        tag="div"
-        class="w-full h-14 flex gap-2 justify-center items-center"
-      >
-        <EquipableIcon
-          v-for="equipable in selectedTowers"
-          :key="equipable.name"
-          :equipable="equipable"
-          show-group
-        />
-        <EquipableIcon
-          v-if="selectedMap"
-          :key="selectedMap.name"
-          :equipable="selectedMap"
-          :class="selectedTowers.length && 'ml-5'"
-          show-group
-        />
-        <div key="generate-btn">
-          <UButton
-            variant="outline"
-            icon="i-lucide-dices"
-            size="xl"
-            class="cursor-pointer"
-            :class="selectedMap && 'ml-5'"
-            @click="generate"
-          />
-        </div>
-      </TransitionGroup>
+      <SelectionInventory
+        :selected-towers="selectedTowers"
+        :selected-map="selectedMap"
+        :generating="generating"
+        @generate="generate"
+      />
     </div>
   </UApp>
 </template>

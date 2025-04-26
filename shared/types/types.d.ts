@@ -3,5 +3,5 @@ export interface Equipable {
   image: string;
   group: string;
   type: "tower" | "map";
-  state: "force" | "ban" | "default";
+  state: "force" | "ban" | "default" | "removed";
 }
