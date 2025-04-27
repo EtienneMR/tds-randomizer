@@ -21,6 +21,7 @@ defineEmits<{
       :key="equipable.name"
       :equipable="equipable"
       show-group
+      is-picking
     />
     <EquipableIcon
       v-if="selectedMap"
@@ -28,6 +29,7 @@ defineEmits<{
       :equipable="selectedMap"
       :class="selectedTowers.length && 'ml-5'"
       show-group
+      is-picking
     />
     <div key="generate-btn">
       <UButton

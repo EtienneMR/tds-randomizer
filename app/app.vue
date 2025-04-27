@@ -44,6 +44,7 @@ const activeTab = ref<(typeof TYPES)[number]["value"]>("tower");
 const selectedTowers = ref<Equipable[]>([]);
 const selectedMap = ref<Equipable | null>(null);
 const generating = ref(false);
+const picked = ref(false);
 
 const equipablesTypes = computed(() => groupArray(equipables.value, "type"));
 const tabGroups = computed(() =>
@@ -58,6 +59,7 @@ function reset() {
   }
   selectedTowers.value = [];
   selectedMap.value = null;
+  picked.value = false;
 }
 
 function wrapToggle<P extends unknown[]>(f: (...args: P) => void, ...args: P) {
@@ -70,6 +72,7 @@ function wrapToggle<P extends unknown[]>(f: (...args: P) => void, ...args: P) {
 async function generate() {
   generating.value = true;
   reset();
+  picked.value = true;
 
   const towersByState = groupArray(equipablesTypes.value.tower, "state");
   const mapsByState = groupArray(equipablesTypes.value.map, "state");
@@ -111,6 +114,7 @@ async function generate() {
             :key="groupName"
             :group-name="groupName"
             :equipables="equipables"
+            :is-picking="picked"
             @toggleState="(e) => wrapToggle(toggleState, e)"
             @toggleGroup="(n) => wrapToggle(toggleGroup, n)"
           />

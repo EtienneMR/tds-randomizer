@@ -19,5 +19,5 @@ export async function pickEquipables(
   }
   await new Promise((resolve) => setTimeout(resolve, END_DEPLAY_TIME));
 
-  return copy.concat(force ?? []);
+  return (force ?? []).concat(copy);
 }

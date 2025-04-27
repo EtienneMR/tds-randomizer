@@ -2,6 +2,7 @@
 defineProps<{
   groupName: string;
   equipables: Equipable[];
+  isPicking: boolean;
 }>();
 
 defineEmits<{
@@ -21,6 +22,7 @@ defineEmits<{
         v-for="equipable in equipables"
         :key="equipable.name"
         :equipable="equipable"
+        :is-picking="isPicking"
         @click="$emit('toggleState', equipable)"
       />
     </div>
