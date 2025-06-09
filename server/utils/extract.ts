@@ -67,6 +67,7 @@ export async function extractRegularMaps(
     .split(/\|\-\s*\n/)
     .map((r) => r.trim())
     .filter((r) => r.length > 0);
+  console.log(rows);
 
   const maps: Equipable[] = [];
 

@@ -8,7 +8,7 @@ export default defineCachedEventHandler(
   },
   {
     name: "equipables",
-    getKey: () => "_",
+    getKey: import.meta.dev ? undefined : () => "_",
     maxAge: 60 * 60 * 24,
     swr: true,
   }
